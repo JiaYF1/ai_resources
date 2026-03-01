@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm add @element-plus/icons-vue)",
+      "Bash(pnpm build)"
+    ]
+  }
+}
