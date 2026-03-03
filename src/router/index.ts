@@ -32,9 +32,19 @@ const router = createRouter({
           component: () => import('@/views/ai-knowledge/AIConcepts.vue'),
         },
         {
+          path: 'ai-concepts/:category',
+          name: 'ai-concepts-detail',
+          component: () => import('@/views/NotebookDetail.vue'),
+        },
+        {
           path: 'ai-manual',
           name: 'ai-manual',
           component: () => import('@/views/ai-knowledge/AIManual.vue'),
+        },
+        {
+          path: 'ai-manual/:category',
+          name: 'ai-manual-detail',
+          component: () => import('@/views/NotebookDetail.vue'),
         },
       ],
     },

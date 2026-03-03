@@ -42,5 +42,6 @@ import AppSidebar from './components/AppSidebar.vue'
   flex: 1;
   overflow-y: auto;
   background-color: #f5f7fa;
+  position: relative; /* 使其成为 offsetParent，便于 MdCatalog 计算定位 */
 }
 </style>

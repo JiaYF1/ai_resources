@@ -1,23 +1,57 @@
 <script setup lang="ts">
+import { useRouter } from 'vue-router';
+import { aiConceptsConfig } from '@/config/notebooks';
+
+const router = useRouter();
+
+// 点击分类卡片，跳转到笔记详情页
+const goToCategory = (categoryKey: string) => {
+  router.push(`/ai-knowledge/ai-concepts/${categoryKey}`);
+};
 </script>
 
 <template>
   <div class="ai-concepts">
     <h2>AI基本概念</h2>
     <p class="page-desc">了解人工智能领域的核心概念与基础知识</p>
-    <div class="content-placeholder">
-      <el-empty description="学习笔记加载中，请添加 Markdown 文档" />
+
+    <!-- 遍历大分类 -->
+    <div v-for="group in aiConceptsConfig.groups" :key="group.id" class="group-section">
+      <h3 class="group-title">{{ group.name }}</h3>
+
+      <!-- 遍历小分类，用卡片展示 -->
+      <div class="category-grid">
+        <el-card
+          v-for="category in group.categories"
+          :key="category.key"
+          class="category-card"
+          shadow="hover"
+          @click="goToCategory(category.key)"
+        >
+          <div class="card-content">
+            <div class="card-icon">{{ category.icon }}</div>
+            <h4 class="card-title">{{ category.name }}</h4>
+            <p class="card-desc">{{ category.description }}</p>
+            <div class="card-footer">
+              <span class="notebook-count">{{ category.notebooks.length }} 篇笔记</span>
+              <el-icon class="arrow-icon"><ArrowRight /></el-icon>
+            </div>
+          </div>
+        </el-card>
+      </div>
     </div>
   </div>
 </template>
 
-<style scoped>
+<style lang="scss" scoped>
 .ai-concepts {
   padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 h2 {
-  font-size: 22px;
+  font-size: 28px;
   font-weight: 600;
   color: #303133;
   margin-bottom: 8px;
@@ -26,10 +60,83 @@ h2 {
 .page-desc {
   color: #909399;
   font-size: 14px;
-  margin-bottom: 24px;
+  margin-bottom: 32px;
 }
 
-.content-placeholder {
-  padding: 60px 0;
+.group-section {
+  margin-bottom: 40px;
+}
+
+.group-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #67c23a;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #e4e7ed;
+}
+
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.category-card {
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+    border-color: #67c23a;
+  }
+}
+
+.card-content {
+  text-align: center;
+}
+
+.card-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.card-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #303133;
+  margin-bottom: 12px;
+}
+
+.card-desc {
+  font-size: 14px;
+  color: #606266;
+  line-height: 1.6;
+  margin-bottom: 16px;
+  min-height: 44px;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 12px;
+  border-top: 1px solid #ebeef5;
+}
+
+.notebook-count {
+  font-size: 13px;
+  color: #909399;
+}
+
+.arrow-icon {
+  color: #67c23a;
+  font-size: 16px;
+}
+
+@media (max-width: 768px) {
+  .category-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
