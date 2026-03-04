@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { ref, reactive, computed, provide, inject } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Setting, Delete, Plus } from '@element-plus/icons-vue'
+import { Setting, Delete } from '@element-plus/icons-vue'
 import ChatPanel from '@/components/model-comparison/ChatPanel.vue'
 import MessageInput from '@/components/model-comparison/MessageInput.vue'
-import { AVAILABLE_MODELS, DEFAULT_PANEL_MODELS, getModelById } from '@/config/models'
-import type { Message, ModelConfig, ApiKeys } from '@/types/model-comparison'
+import { DEFAULT_PANEL_MODELS, getModelById } from '@/config/models'
+import type { Message, ModelConfig, ApiKeys, ChatEvent } from '@/types/model-comparison'
 import { PROVIDER_LABELS } from '@/types/model-comparison'
+import { getBot } from '@/utils/bots'
 
 // ─── Props ───────────────────────────────────────────────────────────────────
 
@@ -20,6 +21,7 @@ const panelModelIds = ref<string[]>(DEFAULT_PANEL_MODELS.slice(0, 4))
 const conversations = reactive<Record<string, Message[]>>({})
 const loadingStates = reactive<Record<string, boolean>>({})
 const settingsVisible = ref(false)
+const abortControllers = ref<Record<string, AbortController>>({})
 
 const apiKeys = reactive<ApiKeys>({
   openai: '',
@@ -77,104 +79,58 @@ for (let i = 0; i < 4; i++) {
   }
 }
 
-// ─── API Calls ───────────────────────────────────────────────────────────────
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const callOpenAI = async (messages: Message[], apiKey: string, modelId: string): Promise<string> => {
-  const res = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
-    body: JSON.stringify({
-      model: modelId,
-      messages: messages.map((m) => ({ role: m.role, content: m.content })),
-    }),
-  })
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}))
-    throw new Error(err.error?.message ?? `OpenAI 请求失败 (${res.status})`)
-  }
-  const data = await res.json()
-  return data.choices[0].message.content
-}
+const generateMessageId = () => `msg-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
 
-const callAnthropic = async (messages: Message[], apiKey: string, modelId: string): Promise<string> => {
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true',
-    },
-    body: JSON.stringify({
-      model: modelId,
-      max_tokens: 8096,
-      messages: messages.map((m) => ({ role: m.role, content: m.content })),
-    }),
-  })
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}))
-    throw new Error(err.error?.message ?? `Anthropic 请求失败 (${res.status})`)
-  }
-  const data = await res.json()
-  return data.content[0].text
-}
+// ─── Core: Call Model with Streaming ─────────────────────────────────────────
 
-const callGemini = async (messages: Message[], apiKey: string, modelId: string): Promise<string> => {
-  const contents = messages.map((m) => ({
-    role: m.role === 'assistant' ? 'model' : 'user',
-    parts: [{ text: m.content }],
-  }))
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${apiKey}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents }),
-    }
-  )
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}))
-    throw new Error(err.error?.message ?? `Gemini 请求失败 (${res.status})`)
-  }
-  const data = await res.json()
-  return data.candidates[0].content.parts[0].text
-}
-
-const callDeepSeek = async (messages: Message[], apiKey: string, modelId: string): Promise<string> => {
-  const res = await fetch('https://api.deepseek.com/v1/chat/completions', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
-    body: JSON.stringify({
-      model: modelId,
-      messages: messages.map((m) => ({ role: m.role, content: m.content })),
-    }),
-  })
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}))
-    throw new Error(err.error?.message ?? `DeepSeek 请求失败 (${res.status})`)
-  }
-  const data = await res.json()
-  return data.choices[0].message.content
-}
-
-const callModel = async (model: ModelConfig, messages: Message[]): Promise<string> => {
+const callModel = async (
+  panelKey: string,
+  model: ModelConfig,
+  historyMessages: Message[],
+  assistantMsg: Message,
+) => {
   const key = apiKeys[model.provider]
-  if (!key) throw new Error(`请先在设置中配置 ${PROVIDER_LABELS[model.provider]}`)
-  switch (model.provider) {
-    case 'openai':
-      return callOpenAI(messages, key, model.modelId)
-    case 'anthropic':
-      return callAnthropic(messages, key, model.modelId)
-    case 'gemini':
-      return callGemini(messages, key, model.modelId)
-    case 'deepseek':
-      return callDeepSeek(messages, key, model.modelId)
+  if (!key) {
+    assistantMsg.content = `❌ 请先配置 ${PROVIDER_LABELS[model.provider]}`
+    return
+  }
+
+  const bot = getBot(model.provider)
+  const controller = new AbortController()
+  abortControllers.value[panelKey] = controller
+
+  await bot.sendMessage({
+    messages: historyMessages,
+    apiKey: key,
+    modelId: model.modelId,
+    signal: controller.signal,
+    onEvent: (event: ChatEvent) => {
+      if (event.type === 'UPDATE') {
+        // 流式拼接增量文本到当前 assistant 消息
+        assistantMsg.content += event.text
+      } else if (event.type === 'ERROR') {
+        assistantMsg.content = `❌ ${event.error.message}`
+      }
+      // DONE 事件由 finally 中的 loadingStates 清理处理
+    },
+  })
+
+  delete abortControllers.value[panelKey]
+}
+
+// ─── Stop Generation ─────────────────────────────────────────────────────────
+
+const stopGeneration = (panelKey: string) => {
+  const controller = abortControllers.value[panelKey]
+  if (controller) {
+    controller.abort()
+    delete abortControllers.value[panelKey]
   }
 }
 
 // ─── Message Handling ────────────────────────────────────────────────────────
-
-const generateMessageId = () => `msg-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
 
 const sendMessageToAllPanels = async (content: string) => {
   if (isAnyLoading.value) return
@@ -187,6 +143,7 @@ const sendMessageToAllPanels = async (content: string) => {
       const panelKey = panel.id
       if (!conversations[panelKey]) conversations[panelKey] = []
 
+      // 添加用户消息
       const userMsg: Message = {
         id: generateMessageId(),
         role: 'user',
@@ -194,26 +151,25 @@ const sendMessageToAllPanels = async (content: string) => {
         timestamp: Date.now(),
       }
       conversations[panelKey].push(userMsg)
+
+      // 创建空的 assistant 消息，用于流式填充
+      conversations[panelKey].push({
+        id: generateMessageId(),
+        role: 'assistant',
+        content: '',
+        timestamp: Date.now(),
+      })
+      // 从 reactive 数组中取回响应式代理引用，确保后续修改能触发 UI 更新
+      const assistantMsg = conversations[panelKey][conversations[panelKey].length - 1]!
       loadingStates[panelKey] = true
 
       try {
-        const reply = await callModel(model, conversations[panelKey])
-        const assistantMsg: Message = {
-          id: generateMessageId(),
-          role: 'assistant',
-          content: reply,
-          timestamp: Date.now(),
-        }
-        conversations[panelKey].push(assistantMsg)
+        // 传入不含空 assistant 消息的历史记录
+        const history = conversations[panelKey].slice(0, -1)
+        await callModel(panelKey, model, history, assistantMsg)
       } catch (err) {
         const msg = err instanceof Error ? err.message : '未知错误'
-        const errorMsg: Message = {
-          id: generateMessageId(),
-          role: 'assistant',
-          content: `❌ ${msg}`,
-          timestamp: Date.now(),
-        }
-        conversations[panelKey].push(errorMsg)
+        assistantMsg.content = `❌ ${msg}`
       } finally {
         loadingStates[panelKey] = false
       }
@@ -222,6 +178,8 @@ const sendMessageToAllPanels = async (content: string) => {
 }
 
 const clearConversations = () => {
+  // 先中止所有正在进行的请求
+  Object.keys(abortControllers.value).forEach(stopGeneration)
   activePanels.value.forEach((panel) => {
     conversations[panel.id] = []
   })
@@ -236,7 +194,6 @@ const closePanel = (panelIndex: number) => {
     ElMessage.warning('至少保留一个对话面板')
     return
   }
-  // This would need to emit an event to parent to change panelCount
   ElMessage.info('请通过侧边栏调整面板数量')
 }
 </script>

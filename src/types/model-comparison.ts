@@ -1,3 +1,5 @@
+
+
 // ─── Message Types ───────────────────────────────────────────────────────────
 
 export interface Message {
@@ -79,4 +81,29 @@ export const PROVIDER_LABELS: Record<ProviderType, string> = {
   anthropic: 'Anthropic API Key',
   gemini: 'Google Gemini API Key',
   deepseek: 'DeepSeek API Key',
+}
+
+
+
+// 统一的错误类
+export class ChatError extends Error {
+  constructor(message: string, public code?: string | number) {
+    super(message)
+    this.name = 'ChatError'
+  }
+}
+
+// 定义流式输出的事件类型
+export type ChatEvent =
+  | { type: 'UPDATE'; text: string }  // 收到新的增量文本
+  | { type: 'DONE' }                  // 回复结束
+  | { type: 'ERROR'; error: ChatError } // 发生错误
+
+// 发送消息的参数，新增 onEvent 回调和 signal 用于中断请求
+export interface SendMessageParams {
+  messages: Message[]
+  apiKey: string
+  modelId: string
+  signal?: AbortSignal
+  onEvent: (event: ChatEvent) => void
 }

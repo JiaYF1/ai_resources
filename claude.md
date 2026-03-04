@@ -14,7 +14,7 @@ src/
 │   └── notebooks.ts      # 笔记分类配置
 ├── types/
 │   ├── menu.ts           # MenuItem 类型定义
-│   ├── model-comparison.ts  # 模型对比相关类型定义
+│   ├── model-comparison.ts  # 模型对比相关类型定义（含 ChatEvent, ChatError, SendMessageParams）
 │   └── notebook.ts       # 笔记相关类型定义
 ├── components/
 │   ├── AppHeader.vue          # 顶部导航栏（标题 + 头像 + 用户名）
@@ -41,6 +41,15 @@ src/
 │       └── AIManual.vue   # AI应用手册（使用 NotebookCategoryGrid 展示分类）
 ├── router/
 │   └── index.ts          # 路由配置
+├── utils/
+│   ├── sse.ts            # SSE (Server-Sent Events) 流式响应解析器
+│   └── bots/             # 各模型 API 通信层（Bot 架构）
+│       ├── abstract-bot.ts   # AbstractBot 基类（统一错误捕获）
+│       ├── index.ts          # getBot() 工厂函数
+│       ├── openai/index.ts   # OpenAI 流式实现
+│       ├── anthropic/index.ts # Anthropic 流式实现
+│       ├── gemini/index.ts   # Gemini 流式实现
+│       └── deepseek/index.ts # DeepSeek 流式实现
 ├── App.vue               # 主布局（Header + Sidebar + RouterView）
 └── assets/
     └── main.css          # 全局样式
@@ -190,6 +199,9 @@ src/
 - `ChatSession`: 会话（包含多个面板）
 - `ChatPanel`: 单个面板数据
 - `ApiKeys`: API Key 存储结构
+- `ChatError`: 统一错误类（message, code）
+- `ChatEvent`: 流式事件联合类型（`UPDATE` 增量文本 | `DONE` 完成 | `ERROR` 错误）
+- `SendMessageParams`: 发送消息参数（messages, apiKey, modelId, signal?, onEvent）
 
 #### 模型配置 (`src/config/models.ts`)
 
@@ -207,17 +219,49 @@ src/
 **新增模型步骤**:
 1. 在 `src/config/models.ts` 的 `AVAILABLE_MODELS` 数组中添加新模型配置
 2. 若是新 provider，在 `src/types/model-comparison.ts` 的 `ProviderType` 和 `PROVIDER_LABELS` 中添加对应条目
-3. 在 `ChatView.vue` 的 `callModel` switch 中添加对应 provider 的调用函数
+3. 在 `src/utils/bots/` 下创建对应 provider 的 Bot 类（继承 `AbstractBot`，实现 `doSendMessage`）
+4. 在 `src/utils/bots/index.ts` 的 `getBot()` switch 中注册新 Bot
 
 **API Key 管理**:
 - 点击"API 设置"弹窗配置各 provider 的 API Key
 - Key 通过 `localStorage` 保存在本地浏览器，不上传服务器
 - 存储键名：`ai-chat-api-keys`
 
-**API 调用**:
-- OpenAI / DeepSeek：标准 REST，`Authorization: Bearer <key>`
-- Anthropic：需要 `anthropic-dangerous-direct-browser-access: true` header
-- Gemini：URL 参数传 key，role 字段 `assistant` → `model`
+#### Bot 架构与流式传输 (`src/utils/bots/`)
+
+**设计模式**：模板方法模式 + 工厂模式
+
+```
+AbstractBot (abstract-bot.ts)
+├── sendMessage()        # 公开方法，统一错误捕获 → ChatError → onEvent(ERROR)
+└── doSendMessage()      # 抽象方法，子类实现具体 API 调用和流式解析
+    ├── OpenAIBot        # fetch + SSE stream → onEvent(UPDATE) → onEvent(DONE)
+    ├── AnthropicBot     # fetch + SSE stream (content_block_delta) → onEvent(UPDATE) → onEvent(DONE)
+    ├── GeminiBot        # fetch + SSE stream (streamGenerateContent?alt=sse) → onEvent(UPDATE) → onEvent(DONE)
+    └── DeepSeekBot      # fetch + SSE stream (OpenAI 兼容格式) → onEvent(UPDATE) → onEvent(DONE)
+```
+
+**流式传输流程**:
+1. `ChatView.vue` 创建空 assistant 消息，调用 `bot.sendMessage()`
+2. Bot 发送 `stream: true` 请求，通过 `parseSSEResponse()` 逐块解析
+3. 每个文本块触发 `onEvent({ type: 'UPDATE', text })` → 拼接到 `assistantMsg.content`
+4. 流结束触发 `onEvent({ type: 'DONE' })` → UI 清理 loading 状态
+5. 错误统一包装为 `ChatError`，通过 `onEvent({ type: 'ERROR' })` 传递
+
+**SSE 解析器** (`src/utils/sse.ts`):
+- 读取 `response.body` 流，按行解析 `data:` 前缀
+- 处理 `[DONE]` 哨兵值（OpenAI/DeepSeek）
+- 缓冲未完整行，支持增量解码
+
+**各 Provider API 差异**:
+| Provider | 端点 | 认证方式 | 流式事件格式 |
+|----------|------|----------|-------------|
+| OpenAI | `/v1/chat/completions` | `Authorization: Bearer <key>` | `choices[0].delta.content` |
+| Anthropic | `/v1/messages` | `x-api-key` + `anthropic-dangerous-direct-browser-access` | `content_block_delta → delta.text` |
+| Gemini | `streamGenerateContent?alt=sse&key=` | URL 参数传 key | `candidates[0].content.parts[0].text` |
+| DeepSeek | `/v1/chat/completions` | `Authorization: Bearer <key>` | `choices[0].delta.content`（OpenAI 兼容） |
+
+**请求中止**：通过 `AbortController` + `signal` 支持用户取消生成，被中止的请求在 `AbstractBot.sendMessage()` 中静默忽略
 
 #### 图像生成器 (`ImageGenerator.vue`)
 

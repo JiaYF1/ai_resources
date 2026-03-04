@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, nextTick, watch, type ComponentPublicInstance } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ref, computed, nextTick, watch } from 'vue'
 import ChatHeader from './ChatHeader.vue'
 import MessageBubble from './MessageBubble.vue'
 import type { Message, ModelConfig } from '@/types/model-comparison'
@@ -38,6 +37,14 @@ const scrollToBottom = () => {
 
 watch(() => props.messages.length, scrollToBottom)
 watch(() => props.loading, scrollToBottom)
+// 流式输出时，监听最后一条消息内容变化以自动滚动
+watch(
+  () => {
+    const last = props.messages[props.messages.length - 1]
+    return last?.content?.length ?? 0
+  },
+  scrollToBottom,
+)
 
 const handleChangeModel = () => {
   showModelSelector.value = true
@@ -60,15 +67,17 @@ const selectModel = (newModelId: string) => {
     </div>
 
     <template v-else>
-      <MessageBubble v-for="msg in messages" :key="msg.id" :message="msg" :model-color="model.color" />
+      <template v-for="msg in messages" :key="msg.id">
+        <!-- 流式输出等待中：空 assistant 消息显示加载动画 -->
+        <div v-if="msg.role === 'assistant' && !msg.content && loading" class="message assistant">
+          <div class="bubble loading-bubble" :style="{ borderTopColor: model.color }">
+            <span class="dot" /><span class="dot" /><span class="dot" />
+          </div>
+        </div>
+        <!-- 正常消息气泡 -->
+        <MessageBubble v-else :message="msg" :model-color="model.color" />
+      </template>
     </template>
-
-    <!-- Loading indicator -->
-    <div v-if="loading" class="message assistant">
-      <div class="bubble loading-bubble" :style="{ borderTopColor: model.color }">
-        <span class="dot" /><span class="dot" /><span class="dot" />
-      </div>
-    </div>
   </div>
 
   <!-- Model Selector Dialog -->

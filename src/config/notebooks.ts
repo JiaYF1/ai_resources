@@ -6,22 +6,48 @@ export const aiManualConfig: NotebookConfig = {
     // 新增的大类：AI 大模型
     {
       id: 'ai-large-models',
-      name: 'AI 大模型',
+      name: 'AI 模型及Agent',
       categories: [
+        // {
+        //   key: 'gpt-series',
+        //   name: 'GPT 系列',
+        //   description: '包括 GPT-3/4/4.1 等 OpenAI 大模型的用法与对比',
+        //   icon: '🤖',
+        //   notebooks: []
+        // },
+        // {
+        //   key: 'claude-models',
+        //   name: 'Claude 模型',
+        //   description: 'Anthropic Claude 系列大模型介绍与实践',
+        //   icon: '🧠',
+        //   notebooks: []
+        // },
         {
-          key: 'gpt-series',
-          name: 'GPT 系列',
-          description: '包括 GPT-3/4/4.1 等 OpenAI 大模型的用法与对比',
-          icon: '🤖',
-          notebooks: []
+          key: 'gemini',
+          name: 'Gemini',
+          description: 'Google Gemini AI使用指南',
+          icon: '💎',
+          notebooks: [
+            // {
+            //   id: 'gemini-intro',
+            //   name: 'Gemini入门',
+            //   path: '/notebooks/gemini/gemini-intro.md'
+            // }
+          ]
         },
         {
-          key: 'claude-models',
-          name: 'Claude 模型',
-          description: 'Anthropic Claude 系列大模型介绍与实践',
-          icon: '🧠',
-          notebooks: []
-        }
+          key: 'openclaw',
+          name: 'OpenClaw',
+          description: 'OpenClaw AI使用指南',
+          icon: '🦞',
+          notebooks: [
+            // {
+            //   id: 'gemini-intro',
+            //   name: 'Gemini入门',
+            //   path: '/notebooks/gemini/gemini-intro.md'
+            // }
+          ]
+        },
       ]
     },
     {
@@ -46,30 +72,18 @@ export const aiManualConfig: NotebookConfig = {
             }
           ]
         },
-        {
-          key: 'gemini',
-          name: 'Gemini',
-          description: 'Google Gemini AI使用指南',
-          icon: '💎',
-          notebooks: [
-            {
-              id: 'gemini-intro',
-              name: 'Gemini入门',
-              path: '/notebooks/gemini/gemini-intro.md'
-            }
-          ]
-        },
+
         {
           key: 'copilot',
           name: 'GitHub Copilot',
           description: 'GitHub Copilot代码补全工具使用手册',
           icon: '🚀',
           notebooks: [
-            {
-              id: 'copilot-setup',
-              name: 'Copilot配置指南',
-              path: '/notebooks/copilot/copilot-setup.md'
-            }
+            // {
+            //   id: 'copilot-setup',
+            //   name: 'Copilot配置指南',
+            //   path: '/notebooks/copilot/copilot-setup.md'
+            // }
           ]
         },
         {
@@ -78,11 +92,11 @@ export const aiManualConfig: NotebookConfig = {
           description: 'OpenAI Codex编程模型使用指南',
           icon: '⚡',
           notebooks: [
-            {
-              id: 'codex-intro',
-              name: 'Codex介绍',
-              path: '/notebooks/codex/codex-intro.md'
-            }
+            // {
+            //   id: 'codex-intro',
+            //   name: 'Codex介绍',
+            //   path: '/notebooks/codex/codex-intro.md'
+            // }
           ]
         }
       ]
@@ -124,7 +138,7 @@ export const aiManualConfig: NotebookConfig = {
     //       description: '提示词工程技巧与最佳实践',
     //       icon: '✍️',
     //       notebooks: [
-          
+
     //       ]
     //     },
     //     {
@@ -133,7 +147,7 @@ export const aiManualConfig: NotebookConfig = {
     //       description: '常用Prompt模板集合',
     //       icon: '📝',
     //       notebooks: [
-          
+
     //       ]
     //     }
     //   ]
