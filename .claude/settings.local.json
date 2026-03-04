@@ -7,7 +7,14 @@
       "WebFetch(domain:app.chathub.gg)",
       "WebFetch(domain:chathub.gg)",
       "Bash(npm run build:*)",
-      "Bash(npx vue-tsc --noEmit)"
+      "Bash(npx vue-tsc --noEmit)",
+      "WebFetch(domain:cdn.simpleicons.org)",
+      "WebFetch(domain:simpleicons.org)",
+      "Bash(curl -s \"https://cdn.simpleicons.org/claude\")",
+      "Bash(curl -sL \"https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/claude.svg\")"
+    ],
+    "additionalDirectories": [
+      "e:\\01Codes\\00my\\02ai_resources\\public"
     ]
   }
 }

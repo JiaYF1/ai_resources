@@ -100,7 +100,7 @@ export const SIDEBAR_MENU: SidebarMenuItem[] = [
 
 // ─── Default Models for Panels ───────────────────────────────────────────────
 
-export const DEFAULT_PANEL_MODELS = ['gpt-4o', 'claude-3-5-sonnet', 'gemini-1-5-pro', 'deepseek-v3']
+export const DEFAULT_PANEL_MODELS = ['deepseek-v3', 'gpt-4o', 'claude-3-5-sonnet', 'gemini-1-5-pro']
 
 // ─── Helper Functions ────────────────────────────────────────────────────────
 

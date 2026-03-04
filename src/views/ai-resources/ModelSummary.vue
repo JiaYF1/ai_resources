@@ -204,16 +204,18 @@ const categories: ModelCategory[] = [
               <el-tag size="small" type="info">{{ model.provider }}</el-tag>
             </div>
           </template>
-          <p class="model-desc">{{ model.description }}</p>
-          <div class="card-footer">
-            <div class="tags">
-              <el-tag v-for="tag in model.tags" :key="tag" size="small" class="tag">
-                {{ tag }}
-              </el-tag>
+          <div class="card-body">
+            <p class="model-desc">{{ model.description }}</p>
+            <div class="card-footer">
+              <div class="tags">
+                <el-tag v-for="tag in model.tags" :key="tag" size="small" class="tag">
+                  {{ tag }}
+                </el-tag>
+              </div>
+              <el-link :href="model.url" target="_blank" type="primary">
+                访问官网
+              </el-link>
             </div>
-            <el-link :href="model.url" target="_blank" type="primary">
-              访问官网
-            </el-link>
           </div>
         </el-card>
       </div>
@@ -223,7 +225,7 @@ const categories: ModelCategory[] = [
 
 <style scoped>
 .model-summary {
-  padding: 24px;
+  padding: var(--spacing-page, 24px);
 }
 
 h2 {
@@ -263,12 +265,26 @@ h2 {
 
 .model-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 16px;
 }
 
 .model-card {
   transition: transform 0.2s;
+  display: flex;
+  flex-direction: column;
+}
+
+.model-card :deep(.el-card__body) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .model-card:hover {
@@ -292,6 +308,7 @@ h2 {
   color: #606266;
   line-height: 1.6;
   margin-bottom: 16px;
+  flex: 1;
 }
 
 .card-footer {
@@ -307,5 +324,17 @@ h2 {
 
 .tag {
   border-radius: 4px;
+}
+
+@media (max-width: 768px) {
+  .model-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .card-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
 }
 </style>

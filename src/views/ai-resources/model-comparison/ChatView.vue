@@ -2,8 +2,8 @@
 import { ref, reactive, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Setting, Delete } from '@element-plus/icons-vue'
-import ChatPanel from '@/components/model-comparison/ChatPanel.vue'
-import MessageInput from '@/components/model-comparison/MessageInput.vue'
+import ChatPanel from '@/components/modelComparison/ChatPanel.vue'
+import MessageInput from '@/components/modelComparison/MessageInput.vue'
 import { DEFAULT_PANEL_MODELS, getModelById } from '@/config/models'
 import type { Message, ModelConfig, ApiKeys, ChatEvent } from '@/types/model-comparison'
 import { PROVIDER_LABELS } from '@/types/model-comparison'
@@ -222,7 +222,7 @@ const closePanel = (panelIndex: number) => {
   <MessageInput :loading="isAnyLoading" @send="sendMessageToAllPanels" />
 
   <!-- Settings Dialog -->
-  <el-dialog v-model="settingsVisible" title="API Key 设置" width="480px">
+  <el-dialog v-model="settingsVisible" title="API Key 设置" :width="'min(480px, 90vw)'">
     <el-alert type="info" :closable="false" class="key-alert">
       API Key 仅保存在本地浏览器中，不会上传至任何服务器。
     </el-alert>
@@ -320,5 +320,32 @@ const closePanel = (panelIndex: number) => {
 
 .key-form {
   padding-right: 8px;
+}
+
+@media (max-width: 768px) {
+  .toolbar {
+    padding: 8px 12px;
+    border-radius: 0;
+  }
+
+  .panel-info {
+    font-size: 12px;
+  }
+
+  /* 移动端多面板纵向等分 */
+  .panels-wrapper.count-2 {
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(2, 1fr);
+  }
+
+  .panels-wrapper.count-3 {
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(3, 1fr);
+  }
+
+  .panels-wrapper.count-4 {
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(4, 1fr);
+  }
 }
 </style>

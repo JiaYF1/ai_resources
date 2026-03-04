@@ -1,13 +1,29 @@
 <script setup lang="ts">
-import { ref, provide, watch } from 'vue'
+import { ref, provide, watch, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import Sidebar from '@/components/model-comparison/Sidebar.vue'
+import Sidebar from '@/components/modelComparison/Sidebar.vue'
 
 const route = useRoute()
 const router = useRouter()
 
 const sidebarCollapsed = ref(false)
-const panelCount = ref(2)
+const panelCount = ref(1)
+
+// 移动端自动折叠侧边栏
+const checkMobile = () => {
+  if (window.innerWidth <= 768) {
+    sidebarCollapsed.value = true
+  }
+}
+
+onMounted(() => {
+  checkMobile()
+  window.addEventListener('resize', checkMobile)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', checkMobile)
+})
 
 // Provide panel count to child routes
 provide('panelCount', panelCount)
@@ -25,15 +41,12 @@ watch(
 </script>
 
 <template>
-  <div class="model-comparison-layout">
-    <Sidebar
-      v-model:collapsed="sidebarCollapsed"
-      v-model:panel-count="panelCount"
-    />
-    <div class="main-content">
-      <router-view :panel-count="panelCount" />
-    </div>
+<div class="model-comparison-layout">
+  <Sidebar v-model:collapsed="sidebarCollapsed" v-model:panel-count="panelCount" />
+  <div class="main-content">
+    <router-view :panel-count="panelCount" />
   </div>
+</div>
 </template>
 
 <style scoped>

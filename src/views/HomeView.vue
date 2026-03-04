@@ -28,11 +28,11 @@
 
 <style scoped>
 .home-view {
-  padding: 40px;
+  padding: var(--spacing-page, 40px);
 }
 
 h2 {
-  font-size: 28px;
+  font-size: var(--font-size-h1, 28px);
   font-weight: 600;
   color: #303133;
   margin-bottom: 12px;
@@ -40,19 +40,19 @@ h2 {
 
 .desc {
   color: #909399;
-  font-size: 15px;
+  font-size: var(--font-size-body, 15px);
   margin-bottom: 32px;
 }
 
 .quick-cards {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
+  gap: var(--spacing-card, 20px);
 }
 
 .card {
   display: block;
-  padding: 24px;
+  padding: var(--spacing-card, 24px);
   background: #fff;
   border: 1px solid #e4e7ed;
   border-radius: 8px;
@@ -67,15 +67,21 @@ h2 {
 }
 
 .card h3 {
-  font-size: 18px;
+  font-size: var(--font-size-h3, 18px);
   font-weight: 600;
   color: #303133;
   margin-bottom: 8px;
 }
 
 .card p {
-  font-size: 14px;
+  font-size: var(--font-size-small, 14px);
   color: #909399;
   margin: 0;
+}
+
+@media (max-width: 768px) {
+  .quick-cards {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

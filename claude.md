@@ -275,3 +275,39 @@ AbstractBot (abstract-bot.ts)
 - Vue Router (路由管理)
 - md-editor-v3 (Markdown预览)
 - Vite (构建工具)
+
+### 移动端适配
+
+**通用样式文件**: `src/assets/styles/publicstyles.scss`
+
+包含响应式 CSS 变量、移动端通用覆盖样式。所有页面共享。
+
+**断点规范**:
+- 移动端: ≤768px
+- 平板: 769px - 1024px
+- 桌面: >1024px
+
+**响应式 CSS 变量**（定义在 `:root`，各组件通过 `var()` 引用）:
+- `--font-size-h1` / `--font-size-h2` / `--font-size-h3`: 标题字体（使用 `clamp()` 平滑缩放）
+- `--font-size-body` / `--font-size-small`: 正文/小字体
+- `--spacing-page` / `--spacing-section` / `--spacing-card`: 间距变量
+
+**主布局适配** (`App.vue`):
+- 移动端（≤768px）左侧 AppSidebar 自动隐藏
+- 通过 AppHeader 的汉堡菜单按钮切换侧边栏显示
+- 侧边栏以 `position: fixed` + 半透明遮罩层覆盖内容区
+- 路由切换时自动关闭移动端侧边栏
+- 监听 `window.resize` 事件响应屏幕宽度变化
+
+**AppHeader 适配**:
+- 移动端显示汉堡菜单图标，接收 `isMobile` prop
+- 移动端隐藏用户名文字，仅保留头像
+- 头部高度统一为 50px
+
+**各页面适配要点**:
+- HomeView: 移动端卡片单列布局
+- ModelSummary: 卡片网格 `minmax(260px, 1fr)`，移动端单列；卡片使用 flex 布局确保同行卡片的 tags/footer 对齐
+- ModelComparison: 默认单模型（DeepSeek），移动端自动折叠内部侧边栏；多面板移动端纵向等分
+- ChatView: 移动端多面板纵向等分排列，对话框宽度响应式 `min(480px, 90vw)`
+- NotebookDetail: 移动端笔记目录和内容纵向排列，隐藏右侧目录
+- NotebookCategoryGrid: 已有 768px 断点，移动端单列；卡片图标固定高度 52px，描述区 flex:1 确保 footer 对齐

@@ -58,18 +58,18 @@ export const aiManualConfig: NotebookConfig = {
           key: 'claude',
           name: 'Claude',
           description: 'Claude AI编程助手使用手册，包括提示词技巧、API调用等',
-          icon: '🤖',
+          icon: '/icons/claude.svg',
           notebooks: [
             {
-              id: 'claude-basic',
-              name: 'Claude基础使用',
-              path: '/notebooks/claude/claude-basic.md'
+              id: 'claude-install',
+              name: 'Claude安装与配置',
+              path: '/notebooks/claude/claude安装.md'
             },
-            {
-              id: 'claude-advanced',
-              name: 'Claude高级技巧',
-              path: '/notebooks/claude/claude-advanced.md'
-            }
+            // {
+            //   id: 'claude-advanced',
+            //   name: 'Claude高级技巧',
+            //   path: '/notebooks/claude/claude-advanced.md'
+            // }
           ]
         },
 

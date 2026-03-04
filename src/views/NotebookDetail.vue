@@ -60,9 +60,15 @@ const loadMarkdown = async (src: string) => {
 
     // 修复图片相对路径
     const baseDir = src.substring(0, src.lastIndexOf('/'));
+    // 修复 Markdown 格式图片: ![alt](images/xxx) 或 ![alt](./images/xxx)
     text = text.replace(
       /!\[(.*?)\]\((\.\/)?images\/(.*?)\)/g,
       `![$1](${baseDir}/images/$3)`
+    );
+    // 修复 HTML <img> 标签: <img src="images/xxx" 或 <img src="./images/xxx"
+    text = text.replace(
+      /(<img\s+[^>]*src=["'])(\.\/)?images\//g,
+      `$1${baseDir}/images/`
     );
 
     content.value = text;
@@ -109,7 +115,8 @@ onMounted(() => {
       <div class="sidebar">
         <div class="sidebar-header">
           <div class="category-info">
-            <span class="category-icon">{{ category?.icon }}</span>
+            <img v-if="category?.icon?.startsWith('/')" :src="category.icon" :alt="category.name" class="category-icon-img" />
+            <span v-else class="category-icon">{{ category?.icon }}</span>
             <span class="category-name">{{ category?.name }}</span>
           </div>
           <p class="category-desc">{{ category?.description }}</p>
@@ -165,7 +172,7 @@ onMounted(() => {
 }
 
 .breadcrumb {
-  padding: 16px 24px;
+  padding: 12px var(--spacing-page, 24px);
   background-color: #fff;
   border-bottom: 1px solid #e4e7ed;
 }
@@ -199,6 +206,12 @@ onMounted(() => {
 
 .category-icon {
   font-size: 24px;
+}
+
+.category-icon-img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
 }
 
 .category-name {
@@ -301,11 +314,20 @@ onMounted(() => {
 
   .sidebar {
     width: 100%;
-    max-height: 200px;
+    max-height: 180px;
+  }
+
+  .sidebar-header {
+    padding: 12px;
+  }
+
+  .category-name {
+    font-size: 15px;
   }
 
   .content-area {
     margin: 8px;
+    padding: var(--spacing-page, 12px);
   }
 }
 </style>

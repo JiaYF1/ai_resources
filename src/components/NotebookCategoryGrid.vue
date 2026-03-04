@@ -33,7 +33,10 @@ const goToCategory = (categoryKey: string, notebookCount: number) => {
           @click="goToCategory(category.key, category.notebooks.length)"
         >
           <div class="card-content">
-            <div class="card-icon">{{ category.icon }}</div>
+            <div class="card-icon">
+              <img v-if="category.icon && category.icon.startsWith('/')" :src="category.icon" :alt="category.name" class="card-icon-img" />
+              <span v-else>{{ category.icon }}</span>
+            </div>
             <h4 class="card-title">{{ category.name }}</h4>
             <p class="card-desc">{{ category.description }}</p>
             <div class="card-footer">
@@ -81,13 +84,31 @@ const goToCategory = (categoryKey: string, notebookCount: number) => {
   }
 }
 
+.category-card :deep(.el-card__body) {
+  height: 100%;
+}
+
 .card-content {
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .card-icon {
   font-size: 48px;
   margin-bottom: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 52px;
+  flex-shrink: 0;
+}
+
+.card-icon-img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
 }
 
 .card-title {
@@ -102,7 +123,7 @@ const goToCategory = (categoryKey: string, notebookCount: number) => {
   color: #606266;
   line-height: 1.6;
   margin-bottom: 16px;
-  min-height: 44px;
+  flex: 1;
 }
 
 .card-footer {

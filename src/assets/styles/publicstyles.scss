@@ -1,5 +1,58 @@
-.md-editor{
-.md-editor-preview{
-  padding: 10px !important;
+// ─── 响应式断点 ─────────────────────────────────────────────────────────────
+// mobile: ≤768px  |  tablet: 769-1024px  |  desktop: >1024px
+
+// ─── 响应式字体变量 ──────────────────────────────────────────────────────────
+:root {
+  --font-size-h1: clamp(20px, 4vw, 28px);
+  --font-size-h2: clamp(17px, 3.2vw, 22px);
+  --font-size-h3: clamp(15px, 2.8vw, 18px);
+  --font-size-body: clamp(13px, 2.5vw, 15px);
+  --font-size-small: clamp(12px, 2vw, 13px);
+
+  // 响应式间距
+  --spacing-page: clamp(12px, 3vw, 24px);
+  --spacing-section: clamp(16px, 4vw, 36px);
+  --spacing-card: clamp(12px, 2.5vw, 20px);
 }
+
+// ─── 移动端通用覆盖 ──────────────────────────────────────────────────────────
+@media (max-width: 768px) {
+  // Element Plus 对话框移动端适配
+  .el-dialog {
+    --el-dialog-width: 90vw !important;
+    width: 90vw !important;
+    max-width: 90vw !important;
+    margin: 5vh auto !important;
+  }
+
+  // Element Plus 弹窗内表单标签移动端适配
+  .el-form-item__label {
+    width: auto !important;
+  }
+
+  .el-form--label-left .el-form-item__label,
+  .el-form--label-right .el-form-item__label {
+    text-align: left !important;
+  }
+
+  // 面包屑移动端缩小
+  .el-breadcrumb {
+    font-size: var(--font-size-small);
+  }
+}
+
+// ─── Markdown 编辑器样式 ──────────────────────────────────────────────────────
+.md-editor {
+  .md-editor-preview {
+    padding: 10px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .md-editor {
+    .md-editor-preview {
+      padding: 6px !important;
+      font-size: var(--font-size-body) !important;
+    }
+  }
 }
