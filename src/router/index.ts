@@ -20,6 +20,32 @@ const router = createRouter({
           path: 'model-comparison',
           name: 'model-comparison',
           component: () => import('@/views/ai-resources/ModelComparison.vue'),
+          children: [
+            {
+              path: '',
+              redirect: '/ai-resources/model-comparison/chat',
+            },
+            {
+              path: 'chat',
+              name: 'model-comparison-chat',
+              component: () => import('@/views/ai-resources/model-comparison/ChatView.vue'),
+            },
+            {
+              path: 'c/:sessionId?',
+              name: 'model-comparison-session',
+              component: () => import('@/views/ai-resources/model-comparison/ChatView.vue'),
+            },
+            {
+              path: 'history',
+              name: 'model-comparison-history',
+              component: () => import('@/views/ai-resources/model-comparison/HistoryView.vue'),
+            },
+            {
+              path: 'image-generator',
+              name: 'model-comparison-image',
+              component: () => import('@/views/ai-resources/model-comparison/ImageGenerator.vue'),
+            },
+          ],
         },
       ],
     },

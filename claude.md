@@ -10,22 +10,35 @@
 src/
 ├── config/
 │   ├── menu.ts           # 菜单配置对象
-│   └── notebooks.ts      # 笔记分类配置（新增）
+│   ├── models.ts         # AI 模型配置（可用模型、侧边栏菜单等）
+│   └── notebooks.ts      # 笔记分类配置
 ├── types/
 │   ├── menu.ts           # MenuItem 类型定义
-│   └── notebook.ts       # 笔记相关类型定义（新增）
+│   ├── model-comparison.ts  # 模型对比相关类型定义
+│   └── notebook.ts       # 笔记相关类型定义
 ├── components/
-│   ├── AppHeader.vue     # 顶部导航栏（标题 + 头像 + 用户名）
-│   └── AppSidebar.vue    # 左侧菜单栏（基于 el-menu）
+│   ├── AppHeader.vue          # 顶部导航栏（标题 + 头像 + 用户名）
+│   ├── AppSidebar.vue         # 左侧菜单栏（基于 el-menu）
+│   ├── NotebookCategoryGrid.vue  # 笔记分类卡片网格（公共组件）
+│   └── model-comparison/      # 模型对比相关组件
+│       ├── Sidebar.vue        # 模型工具箱侧边栏（深色主题）
+│       ├── ChatPanel.vue      # 单个聊天面板
+│       ├── ChatHeader.vue     # 聊天面板头部
+│       ├── MessageBubble.vue  # 消息气泡
+│       └── MessageInput.vue   # 消息输入框
 ├── views/
 │   ├── HomeView.vue      # 首页（快捷入口卡片）
-│   ├── NotebookDetail.vue # 笔记详情页（新增）
+│   ├── NotebookDetail.vue # 笔记详情页
 │   ├── ai-resources/
 │   │   ├── ModelSummary.vue    # 模型汇总（AI资源卡片 + 跳转链接）
-│   │   └── ModelComparison.vue # 模型对比（el-table 表格）
+│   │   ├── ModelComparison.vue # 模型对比（左右分屏布局）
+│   │   └── model-comparison/   # 模型对比子路由页面
+│   │       ├── ChatView.vue       # 多模型对话页面
+│   │       ├── HistoryView.vue    # 历史会话列表
+│   │       └── ImageGenerator.vue # 图像生成器
 │   └── ai-knowledge/
-│       ├── AIConcepts.vue # AI基本概念（分类卡片汇总页）
-│       └── AIManual.vue   # AI应用手册（分类卡片汇总页）
+│       ├── AIConcepts.vue # AI基本概念（使用 NotebookCategoryGrid 展示分类）
+│       └── AIManual.vue   # AI应用手册（使用 NotebookCategoryGrid 展示分类）
 ├── router/
 │   └── index.ts          # 路由配置
 ├── App.vue               # 主布局（Header + Sidebar + RouterView）
@@ -44,6 +57,10 @@ src/
 - AI资源:
   - 模型汇总: `/ai-resources/model-summary`
   - 模型对比: `/ai-resources/model-comparison`
+    - 多模型对话: `/ai-resources/model-comparison/chat`
+    - 历史会话: `/ai-resources/model-comparison/c/:sessionId?`
+    - 历史列表: `/ai-resources/model-comparison/history`
+    - 图像生成: `/ai-resources/model-comparison/image-generator`
 - AI知识库:
   - AI基本概念: `/ai-knowledge/ai-concepts`
     - 笔记详情: `/ai-knowledge/ai-concepts/:category`
@@ -52,7 +69,24 @@ src/
 
 **路由设计说明**：笔记详情页作为AI知识库的子路由，确保左侧菜单能正确高亮选中对应的菜单项。
 
-### 笔记系统架构（新增）
+### 公共组件：NotebookCategoryGrid
+
+**文件**: `src/components/NotebookCategoryGrid.vue`
+
+封装了笔记分类卡片的展示逻辑，供 `AIManual.vue` 和 `AIConcepts.vue` 复用。
+
+**Props**:
+- `groups: NotebookGroup[]` — 笔记大分类数据
+- `themeColor: string` — 主题颜色（默认 `#409eff`），控制标题色、卡片 hover 边框色、箭头色
+- `routeBase: string` — 点击卡片时的路由前缀（如 `/ai-knowledge/ai-manual`）
+
+**功能**:
+- 按大分类分组展示笔记小分类卡片
+- 卡片显示：图标、名称、描述、笔记数量
+- 仅当该分类下有笔记时（`notebooks.length > 0`）才允许点击跳转
+- 使用 CSS 自定义属性（`--theme-color`）实现动态主题色
+
+### 笔记系统架构
 
 #### 1. 配置管理
 - **配置文件**: `src/config/notebooks.ts`
@@ -72,15 +106,14 @@ src/
 - `Notebook`: 单个笔记（id, name, path）
 - `NotebookCategory`: 小分类（key, name, description, icon, notebooks[]）
 - `NotebookGroup`: 大分类（id, name, categories[]）
-- `NotebookConfig`: 配置类型（type, groups[]）
+- `NotebookConfig`: 配置类型（groups[]）
 
 #### 3. 页面功能
 
 **AIManual.vue / AIConcepts.vue（分类汇总页）**
-- 使用 `el-card` 展示所有笔记分类
-- 按大分类分组展示
-- 每个卡片显示：图标、名称、描述、笔记数量
-- 点击卡片跳转到 `/notebooks/:category` 路由
+- 传入对应 config 的 groups 和 themeColor 给 `NotebookCategoryGrid` 组件
+- AIManual 主题色：`#409eff`（蓝色）
+- AIConcepts 主题色：`#67c23a`（绿色）
 
 **NotebookDetail.vue（笔记详情页）**
 - 布局：面包屑导航 + 左侧目录树 + 中间内容区 + 右侧目录
@@ -95,17 +128,18 @@ src/
 - 自动处理图片路径：将 `./images/xxx.png` 转换为绝对路径
 - 支持点击目录树切换笔记
 
-#### 5. 示例配置
+#### 5. 笔记分类配置
 
-**AI应用手册分类**:
+**AI应用手册分类（aiManualConfig）**:
+- AI 大模型: GPT 系列, Claude 模型
 - AI编程: Claude, Gemini, GitHub Copilot, OpenAI Codex
-- AI Prompt: Prompt工程, Prompt模板库
-- AI生成PPT: Gamma, Beautiful.ai
+- AI 知识库: IMA, Obsidian, Notion
 
-**AI基本概念分类**:
-- 机器学习基础: 监督学习, 无监督学习
-- 深度学习: 神经网络, Transformer架构
-- 自然语言处理: NLP基础
+**AI基本概念分类（aiConceptsConfig）**:
+- AI 核心概念: AI与机器学习、大语言模型（LLM）、Embedding与向量
+- AI Agent 技术栈: Agent基础、RAG检索增强生成、MCP模型上下文协议、Function Calling
+- Prompt 工程: Prompt基础、高级提示技术
+- AI 生态与工程: 开发框架、AI安全与对齐
 
 ## 使用说明
 
@@ -118,6 +152,78 @@ src/
 1. 在 `src/config/notebooks.ts` 的对应配置中添加新的 `NotebookCategory`
 2. 指定分类的 key（用于路由）、名称、描述、图标
 3. 添加该分类下的笔记列表
+
+### 模型对比 —— ChatHub 多模型对话工具箱
+
+**布局**: 参考 ChatHub (https://app.chathub.gg/) 设计
+
+左右分屏结构：
+- **左侧**：深色主题导航栏（`Sidebar.vue`），可折叠
+- **右侧**：子路由出口，展示对话/历史/图像生成等页面
+
+#### 侧边栏功能分区
+
+1. **模型对比**
+   - 单模型 / 双模型 / 三模型 / 四模型
+   - 点击切换对话面板数量（1-4）
+
+2. **工具**
+   - 图像生成器（DALL-E）
+
+3. **历史记录**
+   - 查看历史会话列表
+
+#### 组件拆分 (`src/components/model-comparison/`)
+
+| 组件 | 功能 |
+|------|------|
+| `Sidebar.vue` | 深色主题侧边栏，支持折叠，菜单分区展示 |
+| `ChatPanel.vue` | 单个聊天面板，包含头部和消息列表 |
+| `ChatHeader.vue` | 面板头部（模型名称、切换模型、关闭按钮） |
+| `MessageBubble.vue` | 消息气泡（用户/AI 样式区分） |
+| `MessageInput.vue` | 底部输入框，支持 Enter 发送 |
+
+#### 类型定义 (`src/types/model-comparison.ts`)
+
+- `Message`: 消息（id, role, content, timestamp）
+- `ModelConfig`: 模型配置（id, name, provider, modelId, color, logo）
+- `ChatSession`: 会话（包含多个面板）
+- `ChatPanel`: 单个面板数据
+- `ApiKeys`: API Key 存储结构
+
+#### 模型配置 (`src/config/models.ts`)
+
+**支持的模型**:
+| 模型 | Provider | Model ID |
+|------|----------|----------|
+| GPT-4o | OpenAI | gpt-4o |
+| GPT-4o Mini | OpenAI | gpt-4o-mini |
+| Claude 3.5 Sonnet | Anthropic | claude-3-5-sonnet-20241022 |
+| Claude 3 Opus | Anthropic | claude-3-opus-20240229 |
+| Gemini 1.5 Pro | Google | gemini-1.5-pro |
+| Gemini 2.0 Flash | Google | gemini-2.0-flash |
+| DeepSeek V3 | DeepSeek | deepseek-chat |
+
+**新增模型步骤**:
+1. 在 `src/config/models.ts` 的 `AVAILABLE_MODELS` 数组中添加新模型配置
+2. 若是新 provider，在 `src/types/model-comparison.ts` 的 `ProviderType` 和 `PROVIDER_LABELS` 中添加对应条目
+3. 在 `ChatView.vue` 的 `callModel` switch 中添加对应 provider 的调用函数
+
+**API Key 管理**:
+- 点击"API 设置"弹窗配置各 provider 的 API Key
+- Key 通过 `localStorage` 保存在本地浏览器，不上传服务器
+- 存储键名：`ai-chat-api-keys`
+
+**API 调用**:
+- OpenAI / DeepSeek：标准 REST，`Authorization: Bearer <key>`
+- Anthropic：需要 `anthropic-dangerous-direct-browser-access: true` header
+- Gemini：URL 参数传 key，role 字段 `assistant` → `model`
+
+#### 图像生成器 (`ImageGenerator.vue`)
+
+- 支持 DALL-E 2 / DALL-E 3
+- 可选图像尺寸：1024×1024、1792×1024（横向）、1024×1792（纵向）
+- 生成的图像显示在网格中，支持下载
 
 ### 技术栈
 - Vue 3 + TypeScript

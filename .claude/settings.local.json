@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "Bash(pnpm add @element-plus/icons-vue)",
-      "Bash(pnpm build)"
+      "Bash(pnpm build)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:app.chathub.gg)",
+      "WebFetch(domain:chathub.gg)",
+      "Bash(npm run build:*)"
     ]
   }
 }
