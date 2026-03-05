@@ -11,6 +11,7 @@ import {
   Picture,
   Clock,
   ChatDotRound,
+  Setting,
 } from '@element-plus/icons-vue'
 import { SIDEBAR_MENU } from '@/config/models'
 
@@ -64,148 +65,168 @@ const isActive = (item: any) => {
 </script>
 
 <template>
-  <div class="sidebar" :class="{ collapsed }">
+  <div class="model-sidebar" :class="{ collapsed }">
     <!-- Header -->
     <div class="sidebar-header">
-      <div class="title" v-show="!collapsed">
-        <el-icon :size="20"><ChatDotRound /></el-icon>
-        <span>模型工具箱</span>
+      <div class="title-area" v-show="!collapsed">
+        <div class="icon-box">
+          <el-icon :size="16"><ChatDotRound /></el-icon>
+        </div>
+        <span>模型对比</span>
       </div>
-      <el-button class="collapse-btn" text @click="toggleCollapse">
-        <el-icon :size="18">
-          <Fold v-if="!collapsed" />
-          <Expand v-else />
+      <el-button class="collapse-btn" text circle @click="toggleCollapse">
+        <el-icon :size="16">
+          <component :is="collapsed ? Expand : Fold" />
         </el-icon>
       </el-button>
     </div>
 
-    <!-- Menu -->
-    <div class="sidebar-menu">
-      <template v-for="section in SIDEBAR_MENU" :key="section.id">
-        <!-- Section Title -->
-        <div class="menu-section" v-if="!collapsed">
-          <el-icon :size="14"><component :is="getIcon(section.icon)" /></el-icon>
-          <span>{{ section.name }}</span>
-        </div>
-        <el-divider v-else class="section-divider" />
+    <!-- Menu Scroll Area -->
+    <div class="menu-scroll-area">
+      <div class="sidebar-menu">
+        <template v-for="section in SIDEBAR_MENU" :key="section.id">
+          <!-- Section Title -->
+          <div class="menu-section-label" v-if="!collapsed">
+            {{ section.name }}
+          </div>
+          <div v-else class="section-divider-mini" />
 
-        <!-- Section Items -->
-        <template v-if="section.children">
-          <div
-            v-for="child in section.children"
-            :key="child.id"
-            class="menu-item"
-            :class="{ active: isActive(child) }"
-            @click="handleMenuClick(child)"
-          >
-            <el-icon :size="18"><component :is="getIcon(child.icon || section.icon)" /></el-icon>
-            <span v-show="!collapsed">{{ child.name }}</span>
-            <!-- <span v-if="!collapsed && child.panelCount" class="panel-badge">{{ child.panelCount }}</span> -->
+          <!-- Section Items -->
+          <div class="section-items">
+            <template v-if="section.children">
+              <div
+                v-for="child in section.children"
+                :key="child.id"
+                class="menu-item"
+                :class="{ active: isActive(child) }"
+                @click="handleMenuClick(child)"
+                :title="collapsed ? child.name : ''"
+              >
+                <div class="item-icon">
+                  <el-icon :size="18"><component :is="getIcon(child.icon || section.icon)" /></el-icon>
+                </div>
+                <span v-show="!collapsed" class="item-name">{{ child.name }}</span>
+                <div v-if="!collapsed && child.panelCount" class="count-badge">{{ child.panelCount }}</div>
+              </div>
+            </template>
+
+            <!-- Direct link item -->
+            <div
+              v-else
+              class="menu-item"
+              :class="{ active: isActive(section) }"
+              @click="handleMenuClick(section)"
+              :title="collapsed ? section.name : ''"
+            >
+              <div class="item-icon">
+                <el-icon :size="18"><component :is="getIcon(section.icon)" /></el-icon>
+              </div>
+              <span v-show="!collapsed" class="item-name">{{ section.name }}</span>
+            </div>
           </div>
         </template>
-
-        <!-- Direct link item -->
-        <div
-          v-else
-          class="menu-item"
-          :class="{ active: isActive(section) }"
-          @click="handleMenuClick(section)"
-        >
-          <el-icon :size="18"><component :is="getIcon(section.icon)" /></el-icon>
-          <span v-show="!collapsed">{{ section.name }}</span>
-        </div>
-      </template>
-    </div>
-
-    <!-- Footer -->
-    <!-- <div class="sidebar-footer">
-      <div class="menu-item" @click="$router.push('/ai-resources/model-comparison/settings')">
-        <el-icon :size="18"><Setting /></el-icon>
-        <span v-show="!collapsed">设置</span>
       </div>
-    </div> -->
+    </div>
   </div>
 </template>
 
-<script lang="ts">
-import { Setting } from '@element-plus/icons-vue'
-</script>
-
-<style scoped>
-.sidebar {
-  width: 220px;
+<style lang="scss" scoped>
+.model-sidebar {
+  width: 200px;
   height: 100%;
-  /* use semantic background color so sidebar is slightly lighter than the global sidebar */
-  background: var(--color-background-soft);
+  background-color: #ffffff;
   display: flex;
   flex-direction: column;
-  transition: width 0.2s ease, background-color 0.3s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
-  border-right: 1px solid var(--color-border);
+  border-right: 1px solid rgba(0, 0, 0, 0.04);
+  z-index: 5;
 }
 
-.sidebar.collapsed {
-  width: 60px;
+.model-sidebar.collapsed {
+  width: 64px;
 }
 
 /* Header */
 .sidebar-header {
+  height: 56px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.title {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  /* inherit main text color for theme consistency */
-  color: var(--color-text);
-  font-size: 16px;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.collapse-btn {
-  color: var(--color-text);
-  opacity: 0.7;
-  padding: 8px;
-}
-
-.collapse-btn:hover {
-  opacity: 1;
-  background: var(--color-background-soft);
+  padding: 0 12px 0 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+  flex-shrink: 0;
 }
 
 .collapsed .sidebar-header {
+  padding: 0;
   justify-content: center;
-  padding: 16px 8px;
+}
+
+.title-area {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #1a1a1a;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.icon-box {
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(135deg, rgba(79, 140, 255, 0.1) 0%, rgba(58, 111, 251, 0.1) 100%);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #3a6ffb;
+}
+
+.collapse-btn {
+  color: #8c8c8c;
+  
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+    color: #1a1a1a;
+  }
 }
 
 /* Menu */
-.sidebar-menu {
+.menu-scroll-area {
   flex: 1;
   overflow-y: auto;
-  padding: 8px;
+  scrollbar-width: none; // Firefox
+  
+  &::-webkit-scrollbar {
+    display: none; // Chrome/Safari
+  }
 }
 
-.menu-section {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 8px 6px;
-  /* adapt to theme text color */
-  color: var(--color-text);
-  font-size: 12px;
+.sidebar-menu {
+  padding: 12px 8px;
+}
+
+.menu-section-label {
+  padding: 16px 12px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #bfbfbf;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
 }
 
-.section-divider {
-  margin: 8px 0;
-  border-color: rgba(255, 255, 255, 0.1);
+.section-divider-mini {
+  height: 1px;
+  background-color: rgba(0, 0, 0, 0.04);
+  margin: 12px 8px;
+}
+
+.section-items {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .menu-item {
@@ -213,41 +234,77 @@ import { Setting } from '@element-plus/icons-vue'
   align-items: center;
   gap: 12px;
   padding: 10px 12px;
-  margin: 2px 0;
-  border-radius: 8px;
-  color: var(--color-text);
+  border-radius: 10px;
+  color: #595959;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
-}
+  position: relative;
 
-.menu-item:hover {
-  background: var(--color-background-soft);
-  color: var(--color-text);
-}
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+    color: #1a1a1a;
+    
+    .item-icon {
+      color: #3a6ffb;
+    }
+  }
 
-.menu-item.active {
-  background: rgba(121, 187, 255, 0.2);
-  color: var(--el-color-primary);
+  &.active {
+    background-color: rgba(58, 111, 251, 0.08);
+    color: #3a6ffb;
+    font-weight: 600;
+
+    .item-icon {
+      color: #3a6ffb;
+    }
+    
+    &::after {
+      content: '';
+      position: absolute;
+      right: 0;
+      top: 10px;
+      bottom: 10px;
+      width: 3px;
+      background-color: #3a6ffb;
+      border-radius: 4px 0 0 4px;
+    }
+  }
 }
 
 .collapsed .menu-item {
   justify-content: center;
   padding: 12px;
+  
+  .item-icon {
+    margin: 0;
+  }
 }
 
-.panel-badge {
+.item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8c8c8c;
+  transition: color 0.2s;
+}
+
+.item-name {
+  font-size: 13.5px;
+}
+
+.count-badge {
   margin-left: auto;
-  background: var(--el-color-primary);
-  color: #fff;
-  font-size: 11px;
-  padding: 2px 6px;
-  border-radius: 10px;
+  font-size: 10px;
+  background-color: rgba(0, 0, 0, 0.04);
+  color: #8c8c8c;
+  padding: 1px 6px;
+  border-radius: 6px;
+  font-weight: 700;
 }
 
-/* Footer */
-.sidebar-footer {
-  padding: 8px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+.active .count-badge {
+  background-color: rgba(58, 111, 251, 0.2);
+  color: #3a6ffb;
 }
 </style>

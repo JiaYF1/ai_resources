@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Setting, Delete } from '@element-plus/icons-vue'
+import { Setting, Delete, InfoFilled } from '@element-plus/icons-vue'
 import ChatPanel from '@/components/modelComparison/ChatPanel.vue'
 import MessageInput from '@/components/modelComparison/MessageInput.vue'
 import { DEFAULT_PANEL_MODELS, getModelById } from '@/config/models'
@@ -203,62 +203,82 @@ const closePanel = (panelIndex: number) => {
   <!-- Toolbar -->
   <div class="toolbar">
     <div class="toolbar-left">
-      <span class="panel-info">当前 {{ panelCount }} 个对话窗口</span>
+      <div class="panel-badge">
+        <span class="badge-dot"></span>
+        <span class="panel-info">当前窗口: {{ panelCount }}</span>
+      </div>
     </div>
     <div class="toolbar-actions">
-      <el-button :icon="Delete" size="small" plain @click="clearConversations">清空对话</el-button>
-      <el-button :icon="Setting" size="small" plain @click="settingsVisible = true">API 设置</el-button>
+      <el-button-group>
+        <el-button :icon="Delete" size="default" plain @click="clearConversations" class="toolbar-btn">清空</el-button>
+        <el-button :icon="Setting" size="default" plain @click="settingsVisible = true"
+          class="toolbar-btn">设置</el-button>
+      </el-button-group>
     </div>
   </div>
 
   <!-- Chat Panels -->
-  <div :class="['panels-wrapper', 'count-' + panelCount]">
-    <ChatPanel v-for="(panel, index) in activePanels" :key="panel.id" :model-id="panel.modelId"
-      :messages="conversations[panel.id] || []" :loading="loadingStates[panel.id]"
-      @update:model-id="(id) => updatePanelModel(index, id)" @close="closePanel(index)" />
+  <div class="panels-container">
+    <div :class="['panels-grid', 'count-' + panelCount]">
+      <ChatPanel v-for="(panel, index) in activePanels" :key="panel.id" :model-id="panel.modelId"
+        :messages="conversations[panel.id] || []" :loading="loadingStates[panel.id]"
+        @update:model-id="(id) => updatePanelModel(index, id)" @close="closePanel(index)" />
+    </div>
   </div>
 
   <!-- Message Input -->
-  <MessageInput :loading="isAnyLoading" @send="sendMessageToAllPanels" />
+  <div class="input-area">
+    <MessageInput :loading="isAnyLoading" @send="sendMessageToAllPanels" />
+  </div>
 
   <!-- Settings Dialog -->
-  <el-dialog v-model="settingsVisible" title="API Key 设置" :width="'min(480px, 90vw)'">
-    <el-alert type="info" :closable="false" class="key-alert">
-      API Key 仅保存在本地浏览器中，不会上传至任何服务器。
-    </el-alert>
-    <el-form label-width="160px" class="key-form">
-      <el-form-item v-for="provider in requiredProviders" :key="provider" :label="PROVIDER_LABELS[provider]">
-        <el-input v-model="apiKeys[provider]" type="password" show-password
-          :placeholder="`请输入 ${PROVIDER_LABELS[provider]}`" />
-      </el-form-item>
-      <el-form-item label="其他 API Key">
-        <el-collapse>
-          <el-collapse-item title="展开配置其他模型的 Key">
-            <el-form label-width="160px">
-              <el-form-item v-for="(label, provider) in PROVIDER_LABELS" :key="provider" :label="label">
-                <el-input v-model="apiKeys[provider as keyof ApiKeys]" type="password" show-password
-                  :placeholder="`请输入 ${label}`" />
-              </el-form-item>
-            </el-form>
-          </el-collapse-item>
-        </el-collapse>
-      </el-form-item>
-    </el-form>
+  <el-dialog v-model="settingsVisible" title="API 设置" width="460px" align-center class="settings-dialog" append-to-body>
+    <div class="settings-scroll-area">
+      <div class="settings-content">
+        <div class="info-banner">
+          <el-icon class="info-icon">
+            <InfoFilled />
+          </el-icon>
+          <p>API Key 仅保存在您的浏览器中，绝对安全。</p>
+        </div>
+
+        <el-form label-position="top" class="key-form">
+          <el-form-item v-for="provider in requiredProviders" :key="provider" :label="PROVIDER_LABELS[provider]">
+            <el-input v-model="apiKeys[provider]" type="password" show-password
+              :placeholder="`请输入 ${PROVIDER_LABELS[provider]} API Key`" class="custom-input" />
+          </el-form-item>
+
+          <div class="other-keys">
+            <el-collapse>
+              <el-collapse-item title="配置其他模型的 API Key">
+                <el-form label-position="top">
+                  <el-form-item v-for="(label, provider) in PROVIDER_LABELS" :key="provider" :label="label">
+                    <el-input v-model="apiKeys[provider as keyof ApiKeys]" type="password" show-password
+                      :placeholder="`请输入 ${label} API Key`" class="custom-input" />
+                  </el-form-item>
+                </el-form>
+              </el-collapse-item>
+            </el-collapse>
+          </div>
+        </el-form>
+      </div>
+    </div>
     <template #footer>
-      <el-button @click="settingsVisible = false">取消</el-button>
-      <el-button type="primary" @click="saveApiKeys">保存</el-button>
+      <div class="dialog-footer">
+        <el-button @click="settingsVisible = false" class="cancel-btn">取消</el-button>
+        <el-button type="primary" @click="saveApiKeys" class="save-btn">保存配置</el-button>
+      </div>
     </template>
   </el-dialog>
 </div>
 </template>
 
-<style scoped>
+<style lang="scss" scoped>
 .chat-view {
   display: flex;
   flex-direction: column;
   height: 100%;
-  /* slightly lighter background to distinguish panels */
-  background: var(--color-background-soft);
+  background-color: #f8f9fa;
   overflow: hidden;
 }
 
@@ -267,45 +287,63 @@ const closePanel = (panelIndex: number) => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 16px;
-  background: #fff;
-  border-bottom: 1px solid var(--color-border);
+  padding: 12px 24px;
+  background: transparent;
   flex-shrink: 0;
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
+}
+
+.panel-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  padding: 6px 14px;
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.02);
+}
+
+.badge-dot {
+  width: 6px;
+  height: 6px;
+  background-color: #3a6ffb;
+  border-radius: 50%;
 }
 
 .panel-info {
   font-size: 13px;
-  color: #606266;
+  font-weight: 600;
+  color: #4a4a4a;
 }
 
-.toolbar-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.toolbar-btn {
+  font-weight: 500;
 }
 
 /* Panels */
-.panels-wrapper {
-  display: grid;
+.panels-container {
   flex: 1;
   overflow: hidden;
-  grid-gap: 12px;
+  padding: 0 24px;
+}
+
+.panels-grid {
+  display: grid;
+  height: 100%;
+  grid-gap: 20px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .count-1 {
   grid-template-columns: 1fr;
-  grid-template-rows: 1fr;
 }
 
 .count-2 {
   grid-template-columns: repeat(2, 1fr);
-  grid-template-rows: 1fr;
 }
 
 .count-3 {
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
 }
 
 .count-4 {
@@ -313,39 +351,139 @@ const closePanel = (panelIndex: number) => {
   grid-template-rows: repeat(2, 1fr);
 }
 
-/* Settings */
-.key-alert {
-  margin-bottom: 20px;
+.input-area {
+  max-width: 100%;
+  width: 100%;
+}
+
+/* Settings Dialog */
+:deep(.settings-dialog) {
+  border-radius: 16px;
+}
+
+.settings-scroll-area {
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: 0 4px;
+  scrollbar-width: thin;
+}
+
+.settings-content {
+  padding-bottom: 8px;
+}
+
+.info-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background-color: #f0f7ff;
+  padding: 12px 16px;
+  border-radius: 10px;
+  margin-bottom: 24px;
+  border: 1px solid rgba(58, 111, 251, 0.1);
+}
+
+.info-icon {
+  color: #3a6ffb;
+  font-size: 20px;
+}
+
+.info-banner p {
+  font-size: 13px;
+  color: #4f8cff;
+  margin: 0;
+  font-weight: 500;
 }
 
 .key-form {
-  padding-right: 8px;
+  padding-right: 12px;
+}
+
+:deep(.el-form-item__label) {
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 8px;
+}
+
+.custom-input :deep(.el-input__wrapper) {
+  border-radius: 8px;
+  padding: 6px 12px;
+  box-shadow: 0 0 0 1px #dcdfe6 inset;
+}
+
+.custom-input :deep(.el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 1px #3a6ffb inset !important;
+}
+
+.other-keys {
+  margin-top: 24px;
+}
+
+:deep(.el-collapse) {
+  border: none;
+}
+
+:deep(.el-collapse-item__header) {
+  font-weight: 500;
+  color: #8c8c8c;
+  background: transparent;
+}
+
+:deep(.el-collapse-item__content) {
+  padding-top: 16px;
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 10px 0;
+}
+
+.save-btn {
+  background: linear-gradient(135deg, #4f8cff 0%, #3a6ffb 100%);
+  border: none;
+  padding: 0 24px;
+  height: 40px;
+  font-weight: 600;
+}
+
+.cancel-btn {
+  height: 40px;
+  padding: 0 20px;
 }
 
 @media (max-width: 768px) {
   .toolbar {
-    padding: 8px 12px;
-    border-radius: 0;
+    padding: 12px 16px;
   }
 
-  .panel-info {
-    font-size: 12px;
+  .panels-container {
+    padding: 0 12px;
+    overflow-y: auto;
   }
 
-  /* 移动端多面板纵向等分 */
-  .panels-wrapper.count-2 {
-    grid-template-columns: 1fr;
-    grid-template-rows: repeat(2, 1fr);
+  .panels-grid {
+    grid-gap: 12px;
+    height: auto;
+    min-height: 100%;
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto !important;
   }
 
-  .panels-wrapper.count-3 {
-    grid-template-columns: 1fr;
-    grid-template-rows: repeat(3, 1fr);
+  .panels-grid>div {
+    min-height: 350px;
+    height: 350px;
   }
 
-  .panels-wrapper.count-4 {
-    grid-template-columns: 1fr;
-    grid-template-rows: repeat(4, 1fr);
+  .settings-scroll-area {
+    max-height: 50vh;
+  }
+
+  .count-1 {
+    .chat-panel {
+      height: 100%;
+    }
   }
 }
 </style>

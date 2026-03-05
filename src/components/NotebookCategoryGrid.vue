@@ -20,34 +20,32 @@ const goToCategory = (categoryKey: string, notebookCount: number) => {
 </script>
 
 <template>
-  <div class="notebook-category-grid" :style="{ '--theme-color': themeColor }">
-    <div v-for="group in groups" :key="group.id" class="group-section">
-      <h3 class="group-title">{{ group.name }}</h3>
+<div class="notebook-category-grid" :style="{ '--theme-color': themeColor }">
+  <div v-for="group in groups" :key="group.id" class="group-section">
+    <h3 class="group-title">{{ group.name }}</h3>
 
-      <div class="category-grid">
-        <el-card
-          v-for="category in group.categories"
-          :key="category.key"
-          class="category-card"
-          shadow="hover"
-          @click="goToCategory(category.key, category.notebooks.length)"
-        >
-          <div class="card-content">
-            <div class="card-icon">
-              <img v-if="category.icon && category.icon.startsWith('/')" :src="category.icon" :alt="category.name" class="card-icon-img" />
-              <span v-else>{{ category.icon }}</span>
-            </div>
-            <h4 class="card-title">{{ category.name }}</h4>
-            <p class="card-desc">{{ category.description }}</p>
-            <div class="card-footer">
-              <span class="notebook-count">{{ category.notebooks.length }} 篇笔记</span>
-              <el-icon class="arrow-icon"><ArrowRight /></el-icon>
-            </div>
+    <div class="category-grid">
+      <el-card v-for="category in group.categories" :key="category.key" class="category-card" shadow="hover"
+        @click="goToCategory(category.key, category.notebooks.length)">
+        <div class="card-content">
+          <div class="card-icon">
+            <img v-if="category.icon && category.icon.startsWith('/')" :src="category.icon" :alt="category.name"
+              class="card-icon-img" />
+            <span v-else>{{ category.icon }}</span>
           </div>
-        </el-card>
-      </div>
+          <h4 class="card-title">{{ category.name }}</h4>
+          <p class="card-desc">{{ category.description }}</p>
+          <div class="card-footer">
+            <span class="notebook-count">{{ category.notebooks.length }} 篇笔记</span>
+            <el-icon class="arrow-icon">
+              <ArrowRight />
+            </el-icon>
+          </div>
+        </div>
+      </el-card>
     </div>
   </div>
+</div>
 </template>
 
 <style lang="scss" scoped>
@@ -72,6 +70,14 @@ const goToCategory = (categoryKey: string, notebookCount: number) => {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 20px;
+}
+
+
+@media (max-width: 768px) {
+  .category-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
 }
 
 .category-card {
@@ -142,11 +148,5 @@ const goToCategory = (categoryKey: string, notebookCount: number) => {
 .arrow-icon {
   color: var(--theme-color);
   font-size: 16px;
-}
-
-@media (max-width: 768px) {
-  .category-grid {
-    grid-template-columns: 1fr;
-  }
 }
 </style>
