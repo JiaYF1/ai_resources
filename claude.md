@@ -1,7 +1,7 @@
 我要创建一个AI资源网站，主要功能如下：1.整合各类AI网站资源，支持用户点击跳转至对应的链接2.整合自己的学习笔记，学习笔记通过解析md文档进行回显
 前端UI空间采用elementplus，其主页为：https://element-plus.org/zh-CN/component/overview
 整体页面分为header，包含网站title，个人头像和用户名等，下方分为左右结构，左边是菜单栏，使用element的menu，menu的结构可以通过一个对象来管理，包含一级menu，children中为submenu，右边则为每个menu下的组件
-从路由设计上来看，目前包含一个首页、一个AI资源、AI知识库的一级路由，首页暂时没有子路由，AI资源中包含模型汇总、模型对比两个子路由，AI知识库包含AI基本概念、AI应用手册两个子路由
+从路由设计上来看，目前包含一个首页、一个AI资源、AI知识库的一级路由，首页暂时没有子路由，AI资源中包含模型汇总子路由和API资源库外链菜单，AI知识库包含AI基本概念、AI应用手册两个子路由
 项目构建时，所有的路由页面放在view文件夹中，公共组件放在components文件夹中，一些类型定义放在types文件夹中
 
 ## 项目文件结构
@@ -59,17 +59,14 @@ src/
 
 ### 基础布局
 - Header（深色顶栏，含标题和用户头像）+ 左侧 220px 菜单 + 右侧内容区
-- 菜单：通过 menu.ts 配置对象驱动，支持一级/子菜单结构，点击自动路由跳转
+- 菜单：通过 menu.ts 配置对象驱动，支持一级/子菜单结构，点击自动路由跳转；支持外链菜单（`externalLink` 字段），点击在新窗口打开，并显示外链图标
 
 ### 路由系统
 - 首页: `/`
 - AI资源:
   - 模型汇总: `/ai-resources/model-summary`
-  - 模型对比: `/ai-resources/model-comparison`
-    - 多模型对话: `/ai-resources/model-comparison/chat`
-    - 历史会话: `/ai-resources/model-comparison/c/:sessionId?`
-    - 历史列表: `/ai-resources/model-comparison/history`
-    - 图像生成: `/ai-resources/model-comparison/image-generator`
+  - API资源库: 外链菜单，跳转至 `http://192.168.4.57:3000`（新窗口打开）
+  - ~~模型对比: `/ai-resources/model-comparison`（已隐藏，路由和菜单均已移除）~~
 - AI知识库:
   - AI基本概念: `/ai-knowledge/ai-concepts`
     - 笔记详情: `/ai-knowledge/ai-concepts/:category`

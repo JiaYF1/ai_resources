@@ -10,14 +10,14 @@
         <h3>模型汇总</h3>
         <p>收录主流 AI 模型，一键直达官网</p>
       </router-link>
-      <router-link to="/ai-resources/model-comparison" class="card">
-        <h3>模型对比</h3>
-        <p>对比不同 AI 模型的特性与能力</p>
-      </router-link>
-      <router-link to="/ai-knowledge/ai-concepts" class="card">
+      <a href="http://192.168.4.57:3000/login" target="_blank" rel="noopener noreferrer" class="card">
+        <h3>API资源库 <span class="external-icon">↗</span></h3>
+        <p>API 接口资源管理与文档查阅</p>
+      </a>
+      <!-- <router-link to="/ai-knowledge/ai-concepts" class="card">
         <h3>AI基本概念</h3>
         <p>了解 AI 领域的核心概念和术语</p>
-      </router-link>
+      </router-link> -->
       <router-link to="/ai-knowledge/ai-manual" class="card">
         <h3>AI应用手册</h3>
         <p>学习如何在实际场景中应用 AI</p>
@@ -77,6 +77,12 @@ h2 {
   font-size: var(--font-size-small, 14px);
   color: #909399;
   margin: 0;
+}
+
+.external-icon {
+  font-size: 14px;
+  color: #909399;
+  margin-left: 4px;
 }
 
 @media (max-width: 768px) {

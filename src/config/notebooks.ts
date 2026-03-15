@@ -4,56 +4,74 @@ import type { NotebookConfig } from '@/types/notebook';
 export const aiManualConfig: NotebookConfig = {
   groups: [
     // 新增的大类：AI 大模型
-    {
-      id: 'ai-large-models',
-      name: 'AI 模型及Agent',
-      categories: [
-        // {
-        //   key: 'gpt-series',
-        //   name: 'GPT 系列',
-        //   description: '包括 GPT-3/4/4.1 等 OpenAI 大模型的用法与对比',
-        //   icon: '🤖',
-        //   notebooks: []
-        // },
-        // {
-        //   key: 'claude-models',
-        //   name: 'Claude 模型',
-        //   description: 'Anthropic Claude 系列大模型介绍与实践',
-        //   icon: '🧠',
-        //   notebooks: []
-        // },
-        {
-          key: 'gemini',
-          name: 'Gemini',
-          description: 'Google Gemini AI使用指南',
-          icon: '💎',
-          notebooks: [
-            // {
-            //   id: 'gemini-intro',
-            //   name: 'Gemini入门',
-            //   path: '/notebooks/gemini/gemini-intro.md'
-            // }
-          ]
-        },
-        {
-          key: 'openclaw',
-          name: 'OpenClaw',
-          description: 'OpenClaw AI使用指南',
-          icon: '🦞',
-          notebooks: [
-            // {
-            //   id: 'gemini-intro',
-            //   name: 'Gemini入门',
-            //   path: '/notebooks/gemini/gemini-intro.md'
-            // }
-          ]
-        },
-      ]
-    },
+    // {
+    //   id: 'ai-large-models',
+    //   name: 'AI 模型及Agent',
+    //   categories: [
+    //     // {
+    //     //   key: 'gpt-series',
+    //     //   name: 'GPT 系列',
+    //     //   description: '包括 GPT-3/4/4.1 等 OpenAI 大模型的用法与对比',
+    //     //   icon: '🤖',
+    //     //   notebooks: []
+    //     // },
+    //     // {
+    //     //   key: 'claude-models',
+    //     //   name: 'Claude 模型',
+    //     //   description: 'Anthropic Claude 系列大模型介绍与实践',
+    //     //   icon: '🧠',
+    //     //   notebooks: []
+    //     // },
+    //     {
+    //       key: 'gemini',
+    //       name: 'Gemini',
+    //       description: 'Google Gemini AI使用指南',
+    //       icon: '💎',
+    //       notebooks: [
+    //         // {
+    //         //   id: 'gemini-intro',
+    //         //   name: 'Gemini入门',
+    //         //   path: '/notebooks/gemini/gemini-intro.md'
+    //         // }
+    //       ]
+    //     },
+    //     {
+    //       key: 'openclaw',
+    //       name: 'OpenClaw',
+    //       description: 'OpenClaw AI使用指南',
+    //       icon: '🦞',
+    //       notebooks: [
+    //         // {
+    //         //   id: 'gemini-intro',
+    //         //   name: 'Gemini入门',
+    //         //   path: '/notebooks/gemini/gemini-intro.md'
+    //         // }
+    //       ]
+    //     },
+    //   ]
+    // },
     {
       id: 'ai-programming',
       name: 'AI编程',
       categories: [
+        {
+          key: 'api',
+          name: 'api资源使用',
+          description: '什么是模型api，如何使用模型api进行编程',
+          icon: '🔗',
+          notebooks: [
+            {
+              id: 'api-base',
+              name: 'API基础使用',
+              path: '/notebooks/api/CSADI API 资源池使用指南.md'
+            },
+            // {
+            //   id: 'claude-advanced',
+            //   name: 'Claude高级技巧',
+            //   path: '/notebooks/claude/claude-advanced.md'
+            // }
+          ]
+        },
         {
           key: 'claude',
           name: 'Claude',
@@ -73,61 +91,61 @@ export const aiManualConfig: NotebookConfig = {
           ]
         },
 
-        {
-          key: 'copilot',
-          name: 'GitHub Copilot',
-          description: 'GitHub Copilot代码补全工具使用手册',
-          icon: '🚀',
-          notebooks: [
-            // {
-            //   id: 'copilot-setup',
-            //   name: 'Copilot配置指南',
-            //   path: '/notebooks/copilot/copilot-setup.md'
-            // }
-          ]
-        },
-        {
-          key: 'codex',
-          name: 'OpenAI Codex',
-          description: 'OpenAI Codex编程模型使用指南',
-          icon: '⚡',
-          notebooks: [
-            // {
-            //   id: 'codex-intro',
-            //   name: 'Codex介绍',
-            //   path: '/notebooks/codex/codex-intro.md'
-            // }
-          ]
-        }
+        // {
+        //   key: 'copilot',
+        //   name: 'GitHub Copilot',
+        //   description: 'GitHub Copilot代码补全工具使用手册',
+        //   icon: '🚀',
+        //   notebooks: [
+        //     // {
+        //     //   id: 'copilot-setup',
+        //     //   name: 'Copilot配置指南',
+        //     //   path: '/notebooks/copilot/copilot-setup.md'
+        //     // }
+        //   ]
+        // },
+        // {
+        //   key: 'codex',
+        //   name: 'OpenAI Codex',
+        //   description: 'OpenAI Codex编程模型使用指南',
+        //   icon: '⚡',
+        //   notebooks: [
+        //     // {
+        //     //   id: 'codex-intro',
+        //     //   name: 'Codex介绍',
+        //     //   path: '/notebooks/codex/codex-intro.md'
+        //     // }
+        //   ]
+        // }
       ]
     },
-    {
-      id: 'ai-knowledge-base',
-      name: 'AI 知识库',
-      categories: [
-        {
-          key: 'IMA',
-          name: 'IMA',
-          description: '提示词工程与关键词架构的技巧与最佳实践',
-          icon: '✍️',
-          notebooks: []
-        },
-        {
-          key: 'Obsidian',
-          name: 'Obsidian',
-          description: 'Obsidian 笔记管理、插件与模板资源',
-          icon: '📝',
-          notebooks: []
-        },
-        {
-          key: 'Notion',
-          name: 'Notion',
-          description: 'Notion 页面模板、数据库与 AI 协同方案',
-          icon: '📂',
-          notebooks: []
-        }
-      ]
-    },
+    // {
+    //   id: 'ai-knowledge-base',
+    //   name: 'AI 知识库',
+    //   categories: [
+    //     {
+    //       key: 'IMA',
+    //       name: 'IMA',
+    //       description: '提示词工程与关键词架构的技巧与最佳实践',
+    //       icon: '✍️',
+    //       notebooks: []
+    //     },
+    //     {
+    //       key: 'Obsidian',
+    //       name: 'Obsidian',
+    //       description: 'Obsidian 笔记管理、插件与模板资源',
+    //       icon: '📝',
+    //       notebooks: []
+    //     },
+    //     {
+    //       key: 'Notion',
+    //       name: 'Notion',
+    //       description: 'Notion 页面模板、数据库与 AI 协同方案',
+    //       icon: '📂',
+    //       notebooks: []
+    //     }
+    //   ]
+    // },
     // {
     //   id: 'ai-prompt',
     //   name: 'AI prompt',

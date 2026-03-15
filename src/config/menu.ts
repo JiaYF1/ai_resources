@@ -18,9 +18,9 @@ export const menuConfig: MenuItem[] = [
         path: '/ai-resources/model-summary',
       },
       {
-        id: 'model-comparison',
-        title: '模型对比',
-        path: '/ai-resources/model-comparison',
+        id: 'api-resources',
+        title: 'API资源库',
+        externalLink: 'http://192.168.4.57:3000/login',
       },
     ],
   },
@@ -29,11 +29,11 @@ export const menuConfig: MenuItem[] = [
     title: 'AI知识库',
     icon: 'Reading',
     children: [
-      {
-        id: 'ai-concepts',
-        title: 'AI基本概念',
-        path: '/ai-knowledge/ai-concepts',
-      },
+      // {
+      //   id: 'ai-concepts',
+      //   title: 'AI基本概念',
+      //   path: '/ai-knowledge/ai-concepts',
+      // },
       {
         id: 'ai-manual',
         title: 'AI应用手册',

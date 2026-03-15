@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useRouter, useRoute } from 'vue-router'
 import { computed } from 'vue'
-import { HomeFilled, Link, Reading } from '@element-plus/icons-vue'
+import { HomeFilled, Link, Reading, TopRight } from '@element-plus/icons-vue'
 import { menuConfig } from '@/config/menu'
 import type { MenuItem } from '@/types/menu'
 
@@ -37,6 +37,20 @@ const activeMenu = computed(() => {
 })
 
 function handleMenuSelect(index: string) {
+  // 查找是否为外链菜单
+  for (const item of menuConfig) {
+    if (item.externalLink && item.id === index) {
+      window.open(item.externalLink, '_blank')
+      return
+    }
+    if (item.children) {
+      const child = item.children.find((c) => c.id === index && c.externalLink)
+      if (child) {
+        window.open(child.externalLink!, '_blank')
+        return
+      }
+    }
+  }
   router.push(index)
 }
 
@@ -56,9 +70,10 @@ function getDefaultOpeneds(): string[] {
         </el-icon>
         <span class="menu-title">{{ item.title }}</span>
       </template>
-      <el-menu-item v-for="child in item.children" :key="child.id" :index="child.path!" class="sub-menu-item">
+      <el-menu-item v-for="child in item.children" :key="child.id" :index="child.externalLink ? child.id : child.path!" class="sub-menu-item">
         <span class="dot-icon" />
         <span class="menu-title">{{ child.title }}</span>
+        <el-icon v-if="child.externalLink" class="external-link-icon"><TopRight /></el-icon>
       </el-menu-item>
     </el-sub-menu>
 
@@ -192,6 +207,12 @@ function getDefaultOpeneds(): string[] {
     border-radius: 50%;
     margin-right: 12px;
     transition: all 0.3s;
+  }
+
+  .external-link-icon {
+    font-size: 12px;
+    margin-left: 4px;
+    color: #bfbfbf;
   }
 
   :deep(.el-sub-menu.is-active) {

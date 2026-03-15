@@ -2,6 +2,8 @@
 import { useRouter } from 'vue-router';
 import type { NotebookGroup } from '@/types/notebook';
 
+const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
+
 const props = withDefaults(defineProps<{
   groups: NotebookGroup[];
   themeColor?: string;
@@ -29,7 +31,7 @@ const goToCategory = (categoryKey: string, notebookCount: number) => {
         @click="goToCategory(category.key, category.notebooks.length)">
         <div class="card-content">
           <div class="card-icon">
-            <img v-if="category.icon && category.icon.startsWith('/')" :src="category.icon" :alt="category.name"
+            <img v-if="category.icon && category.icon.startsWith('/')" :src="`${basePath}${category.icon}`" :alt="category.name"
               class="card-icon-img" />
             <span v-else>{{ category.icon }}</span>
           </div>

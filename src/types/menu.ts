@@ -3,5 +3,6 @@ export interface MenuItem {
   title: string
   icon?: string
   path?: string
+  externalLink?: string
   children?: MenuItem[]
 }

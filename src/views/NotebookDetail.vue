@@ -55,11 +55,13 @@ const treeData = computed(() => {
 const loadMarkdown = async (src: string) => {
   try {
     content.value = '# 加载中...';
-    const response = await fetch(src);
+    const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
+    const fullPath = `${basePath}${src}`;
+    const response = await fetch(fullPath);
     let text = await response.text();
 
     // 修复图片相对路径
-    const baseDir = src.substring(0, src.lastIndexOf('/'));
+    const baseDir = fullPath.substring(0, fullPath.lastIndexOf('/'));
     // 修复 Markdown 格式图片: ![alt](images/xxx) 或 ![alt](./images/xxx)
     text = text.replace(
       /!\[(.*?)\]\((\.\/)?images\/(.*?)\)/g,
@@ -115,7 +117,7 @@ onMounted(() => {
       <div class="sidebar">
         <div class="sidebar-header">
           <div class="category-info">
-            <img v-if="category?.icon?.startsWith('/')" :src="category.icon" :alt="category.name" class="category-icon-img" />
+            <img v-if="category?.icon?.startsWith('/')" :src="`${$router.options.history.base.replace(/\/$/, '')}${category.icon}`" :alt="category.name" class="category-icon-img" />
             <span v-else class="category-icon">{{ category?.icon }}</span>
             <span class="category-name">{{ category?.name }}</span>
           </div>
