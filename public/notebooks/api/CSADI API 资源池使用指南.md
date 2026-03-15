@@ -145,6 +145,8 @@ claude -version
 
 ##### (2)创建配置文件
 
+###### 1️⃣windows配置文件
+
 打开 **PowerShell**（建议以管理员身份运行）并执行（**注意替换apikey！！！**）：
 
 ~~~bash
@@ -178,6 +180,43 @@ $claudeJson = @'
 Write-Host "配置完成！"
 Write-Host "  - settings.json: $settingsFile"
 Write-Host "  - .claude.json: $claudeJsonFile"
+~~~
+
+###### 2️⃣Mac配置文件
+
+> [!WARNING]
+>
+> 先复制下面的命令到本地，将其中的`这里修改成你的令牌`改成你自己的 API Key，然后再执行即可
+
+~~~bash
+# 目标目录：~/.claude
+dir="$HOME/.claude"
+settingsFile="$dir/settings.json"
+claudeJsonFile="$HOME/.claude.json"
+
+# 创建目录（存在不报错）
+mkdir -p "$dir"
+
+# 1. 写入 settings.json（API 配置）
+cat > "$settingsFile" << 'EOF'
+{
+  "env": {
+    "ANTHROPIC_AUTH_TOKEN": "！！！这里修改成你的令牌！！！",
+    "ANTHROPIC_BASE_URL": "http://192.168.4.57:3000"
+  }
+}
+EOF
+
+# 2. 写入 .claude.json（跳过登录）- 注意这个文件在用户根目录
+cat > "$claudeJsonFile" << 'EOF'
+{
+  "hasCompletedOnboarding": true
+}
+EOF
+
+echo "配置完成！"
+echo "  - settings.json: $settingsFile"
+echo "  - .claude.json: $claudeJsonFile"
 ~~~
 
 ##### (3)验证安装
@@ -222,7 +261,11 @@ npm install -g @openai/codex --registry=https://registry.npmmirror.com/
 
 ##### (2)创建配置文件
 
-打开 **PowerShell**（建议以管理员身份运行）并执行（**注意替换apikey！！！**）：
+###### 1️⃣windows配置
+
+> [!WARNING]
+>
+> 打开 **PowerShell**（建议以管理员身份运行）并执行（**注意替换apikey！！！**）：
 
 ~~~bash
 # 目标目录
@@ -276,7 +319,42 @@ Get-Content "$env:USERPROFILE\.codex\config.toml"
 
 ![image-20260312163356411](images/image-20260312163356411.png)
 
+###### 2️⃣Mac配置文件
 
+> [!WARNING]
+>
+> 先复制下面的命令到本地，将其中的`这里修改成你的令牌`改成你自己的 API Key，然后再执行即可
+
+~~~bash
+# 目标目录
+dir="$HOME/.codex"
+mkdir -p "$dir"
+
+# 写 auth.json（覆盖）
+cat > "$dir/auth.json" << 'EOF'
+{
+  "OPENAI_API_KEY": "！！！这里修改成你的令牌！！！"
+}
+EOF
+
+# 写 config.toml（覆盖）
+cat > "$dir/config.toml" << 'EOF'
+model_provider = "aicodewith"
+model = "gpt-5.3-codex"
+model_reasoning_effort = "high"
+disable_response_storage = true
+preferred_auth_method = "apikey"
+requires_openai_auth = true
+
+enableRouteSelection = true
+
+[model_providers.aicodewith]
+name = "aicodewith"
+base_url = "http://192.168.4.57:3000/v1"
+wire_api = "responses"
+EOF
+
+~~~
 
 ##### (3)验证安装
 
@@ -287,6 +365,153 @@ powershell 中输入 codex 启动
 然后在对话框中，输入：您好！，跟他打个招呼，如果正常回复，并且在平台内看到调用记录，则安装成功
 
 ![image-20260312163555562](images/image-20260312163555562.png)
+
+#### 3.Gemini安装
+
+##### (1)下载安装
+
+需要node版本在18及以上，如果没有node，可以去官网下载一个（如果你要做前端开发，推荐使用nvm进行node版本管理）
+
+- 验证node安装（注意版本要在20及以上）
+
+~~~bash
+node --version
+~~~
+
+如果出现下面的提示就说明 node 已经安装成功了
+
+![image-20260312150034994](images/image-20260312150034994.png)
+
+没有node访问 https://nodejs.org/ 进行下载
+
+- 安装CodeX CLI
+
+~~~bash
+npm install -g @google/gemini-cli --registry=https://registry.npmmirror.com/
+~~~
+
+[^注意]: 如果遇到在此系统上禁止运行脚本，需要用管理员权限运行powershell，然后执行 `Set-ExecutionPolicy Unrestricted` 命令
+
+##### (2)创建配置文件
+
+###### 1️⃣windows配置
+
+> [!WARNING]
+>
+> 打开 **PowerShell**（建议以管理员身份运行）并执行（**注意替换apikey！！！**）：
+
+~~~bash
+# 创建 ~/.gemini 目录（存在不报错）
+mkdir "$env:USERPROFILE\.gemini" -Force | Out-Null
+
+# 写入 .env（UTF-8 无 BOM，覆盖）
+$envText = @'
+GEMINI_API_KEY="！！！这里修改成你的令牌！！！"
+GOOGLE_GEMINI_BASE_URL=http://192.168.4.57:3000
+GEMINI_MODEL=gemini-3-pro
+'@
+[System.IO.File]::WriteAllText("$env:USERPROFILE\.gemini\.env", $envText, (New-Object System.Text.UTF8Encoding($false)))
+
+# 写入 settings.json（UTF-8 无 BOM，覆盖）
+$json = @'
+{
+  "ide": {
+    "enabled": true
+  },
+  "security": {
+    "auth": {
+      "selectedType": "gemini-api-key"
+    }
+  }
+}
+'@
+[System.IO.File]::WriteAllText("$env:USERPROFILE\.gemini\settings.json", $json, (New-Object System.Text.UTF8Encoding($false)))
+~~~
+
+验证是否设置成功：
+
+~~~bash
+Get-Content "$env:USERPROFILE\.gemini\.env"
+Get-Content "$env:USERPROFILE\.gemini\settings.json"
+~~~
+
+###### 2️⃣Mac配置文件
+
+> [!WARNING]
+>
+> 先复制下面的命令到本地，将其中的`这里修改成你的令牌`改成你自己的 API Key，然后再执行即可
+
+~~~bash
+mkdir -p "$HOME/.gemini"
+
+cat > "$HOME/.gemini/.env" << 'EOF'
+GEMINI_API_KEY="！！！这里修改成你的令牌！！！"
+GOOGLE_GEMINI_BASE_URL=http://192.168.4.57:3000
+GEMINI_MODEL=gemini-3-pro
+EOF
+
+cat > "$HOME/.gemini/settings.json" << 'EOF'
+{
+  "ide": {
+    "enabled": true
+  },
+  "security": {
+    "auth": {
+      "selectedType": "gemini-api-key"
+    }
+  }
+}
+EOF
+~~~
+
+验证是否设置成功：
+
+~~~bash
+cat "$HOME/.gemini/.env"
+cat "$HOME/.gemini/settings.json"
+~~~
+
+##### (3)验证安装
+
+powershell /终端 中输入Gemini启动
+
+![image-20260315224909267](./images/image-20260315224909267.png)
+
+### 三、使用说明
+
+#### 1.模型选择
+
+不同模型工具在不同应用场景下的表现不同，根据自己的使用场景合理切换或选择使用的工具可以事半功倍，并且节省大量的token消耗
+
+##### (1)Claude code
+
+Claude中即成了`claude-opus-4-6\claude-sonnet-4-6\claude-haiku-4-5-20251001`三种模型，其中`claude-opus-4-6`处理复杂任务时表现最强也最贵，因此在使用过程中可以采用如下方式：
+
+- **复杂任务首选claude-opus-4-6模型**:模型具备极强的逻辑分析、全局把控和复杂问题拆解能力，适合处理高难度、高复杂度的开发相关任务，尤其推荐在项目架构设计阶段使用。使用时建议开启**plan mode**模式，规划好后再让AI动工
+- **小场景业务任务使用claude-sonnet-4-6**：该模型兼顾效率与成本，性能介于Opus和Haiku之间，在单一功能模块的开发、简单代码的编写与调试、基础业务逻辑的梳理、小型工具的开发等，无需复杂的全局把控，追求高效、低成本完成基础开发工作时，优先选择该模型。
+
+##### (2)Codex
+
+codex模型的核心优势的是性价比高，且在各类小场景开发任务中表现均衡、稳定，当我们处理单一小应用场景、无需复杂逻辑拆解的开发任务时，可优先切换到Codex模型使用。
+
+补充说明：Codex模型对基础代码的兼容性强，支持多种编程语言，尤其在前端基础开发、后端简单接口开发等场景中，响应速度快、代码准确率高，适合日常开发中的高频轻量任务。
+
+##### (3)Gemini
+
+Gemini模型的核心优势在于页面美观度相关的处理能力，其对UI设计的理解、视觉效果的优化、界面布局的合理性把控，远优于Cloudcode和Codex模型，尤其擅长将开发需求与视觉体验结合，生成符合审美、交互流畅的页面效果.
+
+我们需要修改页面UI、优化UI设计、提升页面视觉体验时，可优先切换到Gemini模型使用。
+
+##### 总结
+
+复杂任务（架构设计、复杂流程）选Cloudcode-Opus；轻量开发、局部修改（组件修改、简单代码）选Codex或claude-sonnet-4-6；UI设计、页面优化选Gemini。合理切换模型，既能保证开发效率和成果质量，又能最大限度节省token消耗，降低使用成本。
+
+#### 2.写好项目说明文档
+
+在项目中使用cli工具时，AI会从项目根目录默认读取md说明文档，比如Claudecode会读取Claude.md，Gemini会读取gemini.md，Codex会读取codex.md，这些MD文件将作为模型理解项目需求、固定配置的核心依据，提前配置完善可大幅提升模型响应的精准度。
+
+- 我们可以让模型先自动生成一份基础的项目说明文档，后续再结合自身项目需求，在生成的文档中补充固定配置和自定义要求（比如在使用Claude code模型时，我们可通过`/init`命令）
+- 生成基础说明文档后，需及时补充自定义需求，确保配置信息完整，比如使用了哪些第三方库、指定types文件存放的文件夹路径、公共组件的存放目录、接口请求的统一配置、代码规范要求等。完成补充后，模型在后续开发过程中会自动读取这份说明文档，精准匹配自定义需求，避免重复沟通和配置，进一步提升开发效率。
 
 
 
